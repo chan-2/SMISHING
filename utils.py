@@ -2,7 +2,8 @@ import torch
 from torch.utils.data import DataLoader
 from collections import deque
 from sklearn.metrics import accuracy_score
-
+import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
 
 def calculate_test_loss(model, device, loss_function, test_data_loader, X_on_the_fly_function=None):
     model.eval()
@@ -21,20 +22,47 @@ def calculate_test_loss(model, device, loss_function, test_data_loader, X_on_the
     return average_test_loss
 
 def calculate_accuracy(model, test_data_loader):
-    y_preds = deque()
-    ys = deque()
     # Predict label
+    correct = 0
     model.eval()
     with torch.inference_mode():
         for (X, y) in test_data_loader:
             X = model.embed_texts(X)
             y_pred = torch.round(model(X))
+            correct += accuracy_score(y.cpu().detach(), y_pred.cpu().detach(), normalize=False)
+    return correct / len(test_data_loader.dataset)
+
+def t_sne_model_output(model, data_loader):
+    y_preds = deque()
+    ys = deque()
+    X_embeddings = deque()
+    # Predict label
+    model.eval()
+    with torch.inference_mode():
+        for (X, y) in data_loader:
+            X = model.embed_texts(X)
+            y_pred, X_embedding = model(X, True)
             y_preds.append(y_pred)
             ys.append(y)
+            X_embeddings.append(X_embedding)
         y_preds = torch.cat(list(y_preds), dim=0).cpu()
         ys = torch.cat(list(ys), dim=0).cpu()
+        X_embeddings = torch.cat(list(X_embeddings), dim=0).cpu()
 
-    return accuracy_score(ys, y_preds)
+    # Apply t-SNE
+    tsne = TSNE(n_components=2, random_state=42)
+    transformed_data = tsne.fit_transform(X_embeddings)
+
+    # Visualize t-SNE output
+    not_spam_index = (ys == 0).squeeze()
+    spam_index = (ys == 1).squeeze()
+    plt.scatter(transformed_data[not_spam_index, 0], transformed_data[not_spam_index, 1], c="green", label="Not Spam")
+    plt.scatter(transformed_data[spam_index, 0], transformed_data[spam_index, 1], c="red", label="Spam")
+    plt.legend()
+    plt.show()
+
+    return
+
 
 def print_learning_progress(epoch, train_loss, test_loss, accuracy=None):
     progress_string = "\nepoch: {}"\
@@ -77,6 +105,8 @@ def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size,
             continue
         if epoch % print_interval == 0:
             print_progress(train_data_loader, test_data_loader, model, device, epoch, loss_function, average_train_loss, accuracy_function, X_on_the_fly_function)
+
+    t_sne_model_output(model=model, data_loader=test_data_loader)
 
 def print_progress(train_data_loader, test_data_loader, model, device, epoch, loss_function, average_train_loss, accuracy_function=None, X_on_the_fly_function=None):
     average_train_loss /= len(train_data_loader.dataset)
