@@ -1,4 +1,4 @@
-# AI_Project_Team9
+# AI_Project_Team2
 
 ## Topic
 Development of <b>'Smishing detection model in Korean' </b>
