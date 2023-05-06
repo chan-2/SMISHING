@@ -19,12 +19,15 @@ class BaselineModel(nn.Module):
         self.linear = nn.Linear(hidden_size, 1)
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, X: torch.Tensor):
+    def forward(self, X: torch.Tensor, return_embedding=False):
         N = X.shape[0]
         h_0 = torch.zeros((self.num_layers, N, self.hidden_size)).to(self.device)
         y, _ = self.rnn(X, h_0)
-        y = self.sigmoid(self.linear(y[:, -1, :]))
-        return y
+        output = self.sigmoid(self.linear(y[:, -1, :]))
+        if return_embedding:
+            return output, y[:, -1, :]
+        else:
+            return output
 
     def embed_texts(self, texts: list):
         tokenized_texts = self.tokenizer(texts, padding=True, return_tensors="pt")

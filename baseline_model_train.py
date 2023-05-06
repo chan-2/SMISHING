@@ -11,11 +11,12 @@ if __name__ == '__main__':
     # set hyper parameters
     optimizer = torch.optim.Adam(model.parameters(), lr=0.000001)
     loss_function = torch.nn.BCELoss()
-    epochs = 800
+    epochs = 3
     print_interval = 1
     batch_size = 16
     # train loop
     train_loop(train_data_set=train_dataset, test_data_set=test_dataset, epochs=epochs, model=model, device=device,
                batch_size=batch_size, loss_function=loss_function, optimizer=optimizer, print_interval=print_interval,
                accuracy_function=calculate_accuracy, X_on_the_fly_function=model.embed_texts, test_first=True)
+
 
