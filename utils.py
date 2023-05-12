@@ -75,13 +75,14 @@ def print_learning_progress(epoch, train_loss, test_loss, accuracy=None):
 
 def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size, loss_function, optimizer,
                print_interval, accuracy_function=None, X_on_the_fly_function=None,
-               collate_fn=torch.utils.data.default_collate, test_first=False, shuffle=True):
+               collate_fn=torch.utils.data.default_collate, test_first=False, shuffle=True, print_tsne=True):
 
     train_data_loader = DataLoader(train_data_set, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn, drop_last=True)
     test_data_loader = DataLoader(test_data_set, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn, drop_last=True)
+    last_accuracy = 0
 
     if test_first:
-        print_progress(train_data_loader, test_data_loader, model, device, 0, loss_function, 0, accuracy_function, X_on_the_fly_function)
+        last_accuracy = print_progress(train_data_loader, test_data_loader, model, device, 0, loss_function, 0, accuracy_function, X_on_the_fly_function)
 
     for epoch in range(1, epochs+1):
         average_train_loss = 0
@@ -104,18 +105,22 @@ def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size,
         if print_interval <= 0:
             continue
         if epoch % print_interval == 0:
-            print_progress(train_data_loader, test_data_loader, model, device, epoch, loss_function, average_train_loss, accuracy_function, X_on_the_fly_function)
+            last_accuracy = print_progress(train_data_loader, test_data_loader, model, device, epoch, loss_function, average_train_loss, accuracy_function, X_on_the_fly_function)
+    if print_tsne:
+        t_sne_model_output(model=model, data_loader=test_data_loader)
+    return last_accuracy
 
-    t_sne_model_output(model=model, data_loader=test_data_loader)
 
 def print_progress(train_data_loader, test_data_loader, model, device, epoch, loss_function, average_train_loss, accuracy_function=None, X_on_the_fly_function=None):
     average_train_loss /= len(train_data_loader.dataset)
     average_test_loss = calculate_test_loss(model, device, loss_function, test_data_loader, X_on_the_fly_function)
     if accuracy_function is None:
         print_learning_progress(epoch, average_train_loss, average_test_loss)
+        return None
     else:
         accuracy = accuracy_function(model, test_data_loader)
         print_learning_progress(epoch, average_train_loss, average_test_loss, accuracy)
+        return accuracy
 
 
 def get_device_name_agnostic():
