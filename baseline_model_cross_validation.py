@@ -4,7 +4,7 @@ import random
 from data.load_mecab_data import *
 from baseline_model import *
 from utils import *
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import Subset
 from sklearn.model_selection import KFold
 from transformers import logging
 
@@ -45,7 +45,7 @@ if __name__ == '__main__':
         current_accuracy = train_loop(train_data_set=train_set, test_data_set=val_set, epochs=epochs, model=model,
                                       device=device, batch_size=batch_size, loss_function=loss_function, optimizer=optimizer,
                                       print_interval=print_interval, accuracy_function=calculate_accuracy,
-                                      X_on_the_fly_function=model.embed_texts, test_first=False, shuffle=False, print_tsne=False)
+                                      X_on_the_fly_function=model.embed_texts, test_first=False, shuffle=shuffle, print_tsne=False)
         accuracies.append(current_accuracy)
     print("Accuracies = {}".format(accuracies))
     print("Average accuracy = {}\n".format(np.average(accuracies)))
