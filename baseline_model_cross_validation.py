@@ -30,7 +30,6 @@ if __name__ == '__main__':
     k_folds = 10
     shuffle = False
     # cross validation
-    data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, drop_last=True)
     kfold = KFold(n_splits=k_folds, shuffle=shuffle)
     accuracies = []
     for fold, (train_indices, val_indices) in enumerate(kfold.split(dataset)):
