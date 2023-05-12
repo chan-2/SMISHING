@@ -75,10 +75,10 @@ def print_learning_progress(epoch, train_loss, test_loss, accuracy=None):
 
 def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size, loss_function, optimizer,
                print_interval, accuracy_function=None, X_on_the_fly_function=None,
-               collate_fn=torch.utils.data.default_collate, test_first=False):
+               collate_fn=torch.utils.data.default_collate, test_first=False, shuffle=True):
 
-    train_data_loader = DataLoader(train_data_set, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, drop_last=True)
-    test_data_loader = DataLoader(test_data_set, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, drop_last=True)
+    train_data_loader = DataLoader(train_data_set, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn, drop_last=True)
+    test_data_loader = DataLoader(test_data_set, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn, drop_last=True)
 
     if test_first:
         print_progress(train_data_loader, test_data_loader, model, device, 0, loss_function, 0, accuracy_function, X_on_the_fly_function)
