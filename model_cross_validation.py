@@ -14,7 +14,7 @@ if __name__ == '__main__':
     # ignore repetitive error
     logging.set_verbosity_error()
     # set seed
-    seed = 2023
+    seed = 2020
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     dataset, _ = load_mecab_dataset(test_ratio=0.7, random_state=seed)
     # set hyper parameters
     loss_function = torch.nn.BCELoss()
-    epochs = 1
+    epochs = 10
     print_interval = 1
     batch_size = 16
     k_folds = 10

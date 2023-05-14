@@ -6,7 +6,7 @@ from utils import *
 
 if __name__ == '__main__':
     # set seed
-    seed = 2023
+    seed = 2020
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)

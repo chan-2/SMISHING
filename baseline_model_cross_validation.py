@@ -36,7 +36,7 @@ if __name__ == '__main__':
         # load model & init optimizer
         device = get_device_name_agnostic()
         model = BaselineModel(input_size=1024, hidden_size=1024).to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.000001)
         # train loop
         current_accuracy = train_loop(train_data_set=train_set, test_data_set=val_set, epochs=epochs, model=model,
                                       device=device, batch_size=batch_size, loss_function=loss_function, optimizer=optimizer,
