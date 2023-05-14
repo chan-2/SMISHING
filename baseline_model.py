@@ -1,7 +1,6 @@
 import torch
 from torch import nn
-from transformers import AutoTokenizer, AutoModel
-
+from transformers import AutoTokenizer
 
 class BaselineModel(nn.Module):
     def __init__(self, input_size, hidden_size):
@@ -11,7 +10,7 @@ class BaselineModel(nn.Module):
         self.hidden_size = hidden_size
         self.checkpoint = "beomi/KcELECTRA-base-v2022"
         self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
-        self.pretrained_model = AutoModel.from_pretrained(self.checkpoint).to(self.device)
+        self.embedding = nn.Embedding(num_embeddings=54329, embedding_dim=input_size)
         self.dropout = 0
         self.num_layers = 1
         self.rnn = nn.RNN(input_size=input_size, hidden_size=hidden_size, num_layers=self.num_layers,
@@ -20,18 +19,16 @@ class BaselineModel(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, X: torch.Tensor, return_embedding=False):
+        embeddings = self.embedding(X)
         N = X.shape[0]
         h_0 = torch.zeros((self.num_layers, N, self.hidden_size)).to(self.device)
-        y, _ = self.rnn(X, h_0)
+        y, _ = self.rnn(embeddings, h_0)
         output = self.sigmoid(self.linear(y[:, -1, :]))
         if return_embedding:
             return output, y[:, -1, :]
         else:
             return output
 
-    def embed_texts(self, texts: list):
+    def tokenize_texts(self, texts: list):
         tokenized_texts = self.tokenizer(texts, padding=True, return_tensors="pt")
-        model_output = self.pretrained_model(input_ids=tokenized_texts['input_ids'].to(self.device),
-                                             attention_mask=tokenized_texts['attention_mask'].to(self.device))
-        embeddings = model_output["last_hidden_state"]
-        return embeddings
+        return tokenized_texts['input_ids'].to(self.device)
