@@ -33,7 +33,7 @@ def calculate_accuracy(model, test_data_loader, X_on_the_fly_function=None):
             correct += accuracy_score(y.cpu().detach(), y_pred.cpu().detach(), normalize=False)
     return correct / len(test_data_loader.dataset)
 
-def print_tsne_model_output(model, data_loader):
+def print_tsne_model_output(model, data_loader, X_on_the_fly_function=None):
     y_preds = deque()
     ys = deque()
     X_embeddings = deque()
@@ -41,7 +41,8 @@ def print_tsne_model_output(model, data_loader):
     model.eval()
     with torch.inference_mode():
         for (X, y) in data_loader:
-            X = model.embed_texts(X)
+            if X_on_the_fly_function is not None:
+                X = X_on_the_fly_function(X)
             y_pred, X_embedding = model(X, True)
             y_preds.append(y_pred)
             ys.append(y)
@@ -116,7 +117,7 @@ def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size,
                 y_test_losses.append(average_test_loss.detach().cpu().numpy())
                 x_epochs.append(epoch)
     if print_tsne:
-        print_tsne_model_output(model=model, data_loader=test_data_loader)
+        print_tsne_model_output(model=model, data_loader=test_data_loader, X_on_the_fly_function=X_on_the_fly_function)
     if print_graph:
         print_training_graph(x_epochs, y_train_losses, y_test_losses)
     return last_accuracy
