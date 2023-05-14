@@ -21,18 +21,19 @@ def calculate_test_loss(model, device, loss_function, test_data_loader, X_on_the
         average_test_loss /= len(test_data_loader.dataset)
     return average_test_loss
 
-def calculate_accuracy(model, test_data_loader):
+def calculate_accuracy(model, test_data_loader, X_on_the_fly_function=None):
     # Predict label
     correct = 0
     model.eval()
     with torch.inference_mode():
         for (X, y) in test_data_loader:
-            X = model.embed_texts(X)
+            if X_on_the_fly_function is not None:
+                X = X_on_the_fly_function(X)
             y_pred = torch.round(model(X))
             correct += accuracy_score(y.cpu().detach(), y_pred.cpu().detach(), normalize=False)
     return correct / len(test_data_loader.dataset)
 
-def t_sne_model_output(model, data_loader):
+def print_tsne_model_output(model, data_loader):
     y_preds = deque()
     ys = deque()
     X_embeddings = deque()
@@ -75,12 +76,16 @@ def print_learning_progress(epoch, train_loss, test_loss, accuracy=None):
 
 def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size, loss_function, optimizer,
                print_interval, accuracy_function=None, X_on_the_fly_function=None,
-               collate_fn=torch.utils.data.default_collate, test_first=False, shuffle=True, print_tsne=True):
+               collate_fn=torch.utils.data.default_collate, test_first=False, shuffle=True, print_tsne=True,
+               drop_last=True, print_graph=True):
 
-    train_data_loader = DataLoader(train_data_set, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn, drop_last=True)
-    test_data_loader = DataLoader(test_data_set, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn, drop_last=True)
+    train_data_loader = DataLoader(train_data_set, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn, drop_last=drop_last)
+    test_data_loader = DataLoader(test_data_set, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn, drop_last=drop_last)
     last_accuracy = 0
-
+    if print_graph:
+        y_train_losses = deque()
+        y_test_losses = deque()
+        x_epochs = deque()
     if test_first:
         last_accuracy = print_progress(train_data_loader, test_data_loader, model, device, 0, loss_function, 0, accuracy_function, X_on_the_fly_function)
 
@@ -105,9 +110,15 @@ def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size,
         if print_interval <= 0:
             continue
         if epoch % print_interval == 0:
-            last_accuracy = print_progress(train_data_loader, test_data_loader, model, device, epoch, loss_function, average_train_loss, accuracy_function, X_on_the_fly_function)
+            average_train_loss, average_test_loss, last_accuracy = print_progress(train_data_loader, test_data_loader, model, device, epoch, loss_function, average_train_loss, accuracy_function, X_on_the_fly_function)
+            if print_graph:
+                y_train_losses.append(average_train_loss.detach().cpu().numpy())
+                y_test_losses.append(average_test_loss.detach().cpu().numpy())
+                x_epochs.append(epoch)
     if print_tsne:
-        t_sne_model_output(model=model, data_loader=test_data_loader)
+        print_tsne_model_output(model=model, data_loader=test_data_loader)
+    if print_graph:
+        print_training_graph(x_epochs, y_train_losses, y_test_losses)
     return last_accuracy
 
 
@@ -116,13 +127,21 @@ def print_progress(train_data_loader, test_data_loader, model, device, epoch, lo
     average_test_loss = calculate_test_loss(model, device, loss_function, test_data_loader, X_on_the_fly_function)
     if accuracy_function is None:
         print_learning_progress(epoch, average_train_loss, average_test_loss)
-        return None
+        return average_train_loss, average_test_loss
     else:
-        accuracy = accuracy_function(model, test_data_loader)
+        accuracy = accuracy_function(model, test_data_loader, X_on_the_fly_function)
         print_learning_progress(epoch, average_train_loss, average_test_loss, accuracy)
-        return accuracy
+        return average_train_loss, average_test_loss, accuracy
 
 
+def print_training_graph(x_epochs, y_train_losses, y_test_losses):
+    plt.plot(x_epochs, y_train_losses, label='Train Loss')
+    plt.plot(x_epochs, y_test_losses, label='Test Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Learning Curve')
+    plt.legend()
+    plt.show()
 def get_device_name_agnostic():
     return "cuda" if torch.cuda.is_available() else "cpu"
 
