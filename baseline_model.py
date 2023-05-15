@@ -29,6 +29,6 @@ class BaselineModel(nn.Module):
         else:
             return output
 
-    def tokenize_texts(self, texts: list):
+    def tokenize_texts(self, texts):
         tokenized_texts = self.tokenizer(texts, padding=True, return_tensors="pt")
         return tokenized_texts['input_ids'].to(self.device)

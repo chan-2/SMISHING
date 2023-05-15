@@ -29,7 +29,7 @@ class Model(nn.Module):
         else:
             return output
 
-    def embed_texts(self, texts: list):
+    def embed_texts(self, texts):
         tokenized_texts = self.tokenizer(texts, padding=True, return_tensors="pt")
         model_output = self.pretrained_model(input_ids=tokenized_texts['input_ids'].to(self.device),
                                              attention_mask=tokenized_texts['attention_mask'].to(self.device))
