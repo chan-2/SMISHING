@@ -4,7 +4,7 @@ from collections import deque
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
-
+import numpy as np
 def calculate_test_loss(model, device, loss_function, test_data_loader, X_on_the_fly_function=None):
     model.eval()
     with torch.inference_mode():
@@ -143,6 +143,18 @@ def print_training_graph(x_epochs, y_train_losses, y_test_losses):
     plt.title('Learning Curve')
     plt.legend()
     plt.show()
+
+def print_last_layer_weights(model):
+    parameters = list(model.parameters())[-2].detach().cpu().numpy().reshape(-1)
+    index = np.arange(0, parameters.shape[0])
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.bar(index, parameters, color='blue')
+    ax.set_xlabel('Index')
+    ax.set_ylabel('Weight')
+    ax.set_title('Visualization of the last layer')
+    plt.show()
+
 def get_device_name_agnostic():
     return "cuda" if torch.cuda.is_available() else "cpu"
 
