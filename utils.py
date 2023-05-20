@@ -1,4 +1,5 @@
 import torch
+from sklearn.metrics import classification_report
 from torch.utils.data import DataLoader
 from collections import deque
 from sklearn.metrics import accuracy_score
@@ -33,38 +34,6 @@ def calculate_accuracy(model, test_data_loader, X_on_the_fly_function=None):
             correct += accuracy_score(y.cpu().detach(), y_pred.cpu().detach(), normalize=False)
     return correct / len(test_data_loader.dataset)
 
-def print_tsne_model_output(model, data_loader, X_on_the_fly_function=None):
-    y_preds = deque()
-    ys = deque()
-    X_embeddings = deque()
-    # Predict label
-    model.eval()
-    with torch.inference_mode():
-        for (X, y) in data_loader:
-            if X_on_the_fly_function is not None:
-                X = X_on_the_fly_function(X)
-            y_pred, X_embedding = model(X, True)
-            y_preds.append(y_pred)
-            ys.append(y)
-            X_embeddings.append(X_embedding)
-        y_preds = torch.cat(list(y_preds), dim=0).cpu()
-        ys = torch.cat(list(ys), dim=0).cpu()
-        X_embeddings = torch.cat(list(X_embeddings), dim=0).cpu()
-
-    # Apply t-SNE
-    tsne = TSNE(n_components=2, random_state=42)
-    transformed_data = tsne.fit_transform(X_embeddings)
-
-    # Visualize t-SNE output
-    not_spam_index = (ys == 0).squeeze()
-    spam_index = (ys == 1).squeeze()
-    plt.scatter(transformed_data[not_spam_index, 0], transformed_data[not_spam_index, 1], c="green", label="Not Spam")
-    plt.scatter(transformed_data[spam_index, 0], transformed_data[spam_index, 1], c="red", label="Spam")
-    plt.legend()
-    plt.show()
-
-    return
-
 
 def print_learning_progress(epoch, train_loss, test_loss, accuracy=None):
     progress_string = "\nepoch: {}"\
@@ -78,7 +47,7 @@ def print_learning_progress(epoch, train_loss, test_loss, accuracy=None):
 def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size, loss_function, optimizer,
                print_interval, accuracy_function=None, X_on_the_fly_function=None,
                collate_fn=torch.utils.data.default_collate, test_first=False, shuffle=True, print_tsne=True,
-               drop_last=True, print_graph=True):
+               drop_last=True, print_graph=True, print_matrix=False):
 
     train_data_loader = DataLoader(train_data_set, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn, drop_last=drop_last)
     test_data_loader = DataLoader(test_data_set, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn, drop_last=drop_last)
@@ -116,6 +85,8 @@ def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size,
                 y_train_losses.append(average_train_loss.detach().cpu().numpy())
                 y_test_losses.append(average_test_loss.detach().cpu().numpy())
                 x_epochs.append(epoch)
+    if print_matrix:
+        print_confusion_matrix(model=model, data_loader=test_data_loader, X_on_the_fly_function=X_on_the_fly_function)
     if print_tsne:
         print_tsne_model_output(model=model, data_loader=test_data_loader, X_on_the_fly_function=X_on_the_fly_function)
     if print_graph:
@@ -134,7 +105,47 @@ def print_progress(train_data_loader, test_data_loader, model, device, epoch, lo
         print_learning_progress(epoch, average_train_loss, average_test_loss, accuracy)
         return average_train_loss, average_test_loss, accuracy
 
+def print_confusion_matrix(model, data_loader, X_on_the_fly_function=None):
+    y_preds = deque()
+    ys = deque()
+    model.eval()
+    with torch.inference_mode():
+        for (X, y) in data_loader:
+            if X_on_the_fly_function is not None:
+                X = X_on_the_fly_function(X)
+            y_pred = torch.round(model(X))
+            y_preds.append(y_pred.cpu())
+            ys.append(y.cpu())
+    ys = torch.cat(list(ys), dim=0).cpu()
+    y_preds = torch.cat(list(y_preds), dim=0).cpu()
+    print(classification_report(ys, y_preds, target_names=["1", "2"]))
+def print_tsne_model_output(model, data_loader, X_on_the_fly_function=None):
+    ys = deque()
+    X_embeddings = deque()
+    # Predict label
+    model.eval()
+    with torch.inference_mode():
+        for (X, y) in data_loader:
+            if X_on_the_fly_function is not None:
+                X = X_on_the_fly_function(X)
+            _, X_embedding = model(X, True)
+            ys.append(y)
+            X_embeddings.append(X_embedding)
+        ys = torch.cat(list(ys), dim=0).cpu()
+        X_embeddings = torch.cat(list(X_embeddings), dim=0).cpu()
 
+    # Apply t-SNE
+    tsne = TSNE(n_components=2, random_state=42)
+    transformed_data = tsne.fit_transform(X_embeddings)
+
+    # Visualize t-SNE output
+    not_spam_index = (ys == 0).squeeze()
+    spam_index = (ys == 1).squeeze()
+    plt.scatter(transformed_data[not_spam_index, 0], transformed_data[not_spam_index, 1], c="green", label="Not Spam")
+    plt.scatter(transformed_data[spam_index, 0], transformed_data[spam_index, 1], c="red", label="Spam")
+    plt.legend()
+    plt.show()
+    return
 def print_training_graph(x_epochs, y_train_losses, y_test_losses):
     plt.plot(x_epochs, y_train_losses, label='Train Loss')
     plt.plot(x_epochs, y_test_losses, label='Test Loss')
