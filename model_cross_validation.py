@@ -20,8 +20,8 @@ if __name__ == '__main__':
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     # load data
-    # if test_ratio is 0.7, you use only 30% of data
-    dataset, _ = load_mecab_dataset(test_ratio=0.7, random_state=seed)
+    # test_ratio: 1%, train_ratio: 99%
+    dataset, _ = load_mecab_dataset(test_ratio=0.01, random_state=seed)
     # set hyper parameters
     loss_function = torch.nn.BCELoss()
     epochs = 10
