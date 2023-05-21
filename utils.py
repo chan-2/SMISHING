@@ -118,7 +118,7 @@ def print_confusion_matrix(model, data_loader, X_on_the_fly_function=None):
             ys.append(y.cpu())
     ys = torch.cat(list(ys), dim=0).cpu()
     y_preds = torch.cat(list(y_preds), dim=0).cpu()
-    print(classification_report(ys, y_preds, target_names=["1", "2"]))
+    print(classification_report(ys, y_preds, target_names=["Not Spam", "Spam"]))
 def print_tsne_model_output(model, data_loader, X_on_the_fly_function=None):
     ys = deque()
     X_embeddings = deque()
