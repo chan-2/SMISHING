@@ -1,0 +1,10 @@
+Parameter set: {'lr': 1e-06, 'epoch': 10, 'batch_size': 4}
+
+              precision    recall  f1-score   support
+
+        Spam       0.99      0.99      0.99      2351
+   Not Spam       0.96      0.94      0.95       330
+
+    accuracy                           0.99      2681
+   macro avg       0.98      0.97      0.97      2681
+weighted avg       0.99      0.99      0.99      2681
