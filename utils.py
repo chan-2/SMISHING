@@ -47,7 +47,7 @@ def print_learning_progress(epoch, train_loss, test_loss, accuracy=None):
 def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size, loss_function, optimizer,
                print_interval, accuracy_function=None, X_on_the_fly_function=None,
                collate_fn=torch.utils.data.default_collate, test_first=False, shuffle=True, print_tsne=True,
-               drop_last=True, print_graph=True, print_matrix=False):
+               drop_last=True, print_graph=True, print_matrix=False, model_save_path=None):
 
     train_data_loader = DataLoader(train_data_set, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn, drop_last=drop_last)
     test_data_loader = DataLoader(test_data_set, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn, drop_last=drop_last)
@@ -91,6 +91,8 @@ def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size,
         print_tsne_model_output(model=model, data_loader=test_data_loader, X_on_the_fly_function=X_on_the_fly_function)
     if print_graph:
         print_training_graph(x_epochs, y_train_losses, y_test_losses)
+    if model_save_path is not None:
+        torch.save(model, model_save_path)
     return last_accuracy
 
 
