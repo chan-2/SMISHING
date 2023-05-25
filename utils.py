@@ -6,6 +6,7 @@ from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 import numpy as np
+from tqdm import tqdm
 def calculate_test_loss(model, device, loss_function, test_data_loader, X_on_the_fly_function=None):
     model.eval()
     with torch.inference_mode():
@@ -59,9 +60,9 @@ def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size,
     if test_first:
         last_accuracy = print_progress(train_data_loader, test_data_loader, model, device, 0, loss_function, 0, accuracy_function, X_on_the_fly_function)
 
-    for epoch in range(1, epochs+1):
+    for epoch in tqdm(range(1, epochs+1), position=0, leave=False):
         average_train_loss = 0
-        for train_data in train_data_loader:
+        for train_data in tqdm(train_data_loader, position=0, leave=False):
             model.train()
             X, y = train_data
             if X_on_the_fly_function is not None:
