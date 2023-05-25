@@ -40,7 +40,7 @@ if __name__ == '__main__':
         # train loop
         current_accuracy = train_loop(train_data_set=train_set, test_data_set=val_set, epochs=epochs, model=model,
                                       device=device, batch_size=batch_size, loss_function=loss_function, optimizer=optimizer,
-                                      print_interval=print_interval, accuracy_function=calculate_accuracy,
+                                      print_interval=print_interval,
                                       X_on_the_fly_function=model.tokenize_texts, test_first=False, shuffle=shuffle,
                                       print_tsne=False, drop_last=False, print_graph=False)
         accuracies.append(current_accuracy)

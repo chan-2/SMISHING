@@ -7,33 +7,24 @@ import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 import numpy as np
 from tqdm import tqdm
-def calculate_test_loss(model, device, loss_function, test_data_loader, X_on_the_fly_function=None):
+def calculate_test_loss_and_accuracy(model, device, loss_function, test_data_loader, X_on_the_fly_function=None):
     model.eval()
+    correct = 0
     with torch.inference_mode():
         average_test_loss = 0
-        for test_data in tqdm(test_data_loader, position=0, leave=False, desc="Calculating Test Loss"):
+        for test_data in tqdm(test_data_loader, position=0, leave=False, desc="Calculating Test Loss & Accuracy"):
             test_X, test_y = test_data
             if X_on_the_fly_function is not None:
                 test_X = X_on_the_fly_function(test_X)
             test_X = test_X.to(device)
             test_y = test_y.to(device)
-            test_y_prediction = model(test_X)
-            test_loss = loss_function(test_y_prediction, test_y)
+            test_y_output = model(test_X)
+            test_y_prediction = torch.round(test_y_output)
+            correct += accuracy_score(test_y.cpu().detach(), test_y_prediction.cpu().detach(), normalize=False)
+            test_loss = loss_function(test_y_output, test_y)
             average_test_loss += test_loss
         average_test_loss /= len(test_data_loader.dataset)
-    return average_test_loss
-
-def calculate_accuracy(model, test_data_loader, X_on_the_fly_function=None):
-    # Predict label
-    correct = 0
-    model.eval()
-    with torch.inference_mode():
-        for (X, y) in tqdm(test_data_loader, position=0, leave=False, desc="Calculating Accuracy"):
-            if X_on_the_fly_function is not None:
-                X = X_on_the_fly_function(X)
-            y_pred = torch.round(model(X))
-            correct += accuracy_score(y.cpu().detach(), y_pred.cpu().detach(), normalize=False)
-    return correct / len(test_data_loader.dataset)
+    return average_test_loss, correct / len(test_data_loader.dataset)
 
 
 def print_learning_progress(epoch, train_loss, test_loss, accuracy=None):
@@ -46,7 +37,7 @@ def print_learning_progress(epoch, train_loss, test_loss, accuracy=None):
 
 
 def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size, loss_function, optimizer,
-               print_interval, accuracy_function=None, X_on_the_fly_function=None,
+               print_interval, X_on_the_fly_function=None,
                collate_fn=torch.utils.data.default_collate, test_first=False, shuffle=True, print_tsne=True,
                drop_last=True, print_graph=True, print_matrix=False, model_save_path=None):
 
@@ -58,7 +49,7 @@ def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size,
         y_test_losses = deque()
         x_epochs = deque()
     if test_first:
-        last_accuracy = print_progress(train_data_loader, test_data_loader, model, device, 0, loss_function, 0, accuracy_function, X_on_the_fly_function)
+        last_accuracy = print_progress(train_data_loader, test_data_loader, model, device, 0, loss_function, 0, X_on_the_fly_function)
 
     for epoch in range(1, epochs+1):
         average_train_loss = 0
@@ -81,7 +72,7 @@ def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size,
         if print_interval <= 0:
             continue
         if epoch % print_interval == 0:
-            average_train_loss, average_test_loss, last_accuracy = print_progress(train_data_loader, test_data_loader, model, device, epoch, loss_function, average_train_loss, accuracy_function, X_on_the_fly_function)
+            average_train_loss, average_test_loss, last_accuracy = print_progress(train_data_loader, test_data_loader, model, device, epoch, loss_function, average_train_loss, X_on_the_fly_function)
             if print_graph:
                 y_train_losses.append(average_train_loss.detach().cpu().numpy())
                 y_test_losses.append(average_test_loss.detach().cpu().numpy())
@@ -97,16 +88,11 @@ def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size,
     return last_accuracy
 
 
-def print_progress(train_data_loader, test_data_loader, model, device, epoch, loss_function, average_train_loss, accuracy_function=None, X_on_the_fly_function=None):
+def print_progress(train_data_loader, test_data_loader, model, device, epoch, loss_function, average_train_loss, X_on_the_fly_function=None):
     average_train_loss /= len(train_data_loader.dataset)
-    average_test_loss = calculate_test_loss(model, device, loss_function, test_data_loader, X_on_the_fly_function)
-    if accuracy_function is None:
-        print_learning_progress(epoch, average_train_loss, average_test_loss)
-        return average_train_loss, average_test_loss
-    else:
-        accuracy = accuracy_function(model, test_data_loader, X_on_the_fly_function)
-        print_learning_progress(epoch, average_train_loss, average_test_loss, accuracy)
-        return average_train_loss, average_test_loss, accuracy
+    average_test_loss, accuracy = calculate_test_loss_and_accuracy(model, device, loss_function, test_data_loader, X_on_the_fly_function)
+    print_learning_progress(epoch, average_train_loss, average_test_loss, accuracy)
+    return average_train_loss, average_test_loss, accuracy
 
 def print_confusion_matrix(model, data_loader, X_on_the_fly_function=None):
     y_preds = deque()

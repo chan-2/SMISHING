@@ -42,7 +42,7 @@ if __name__ == '__main__':
             current_accuracy = train_loop(train_data_set=train_dataset, test_data_set=test_dataset,
                                           epochs=epochs - prev_epochs, model=model, device=device,
                                           batch_size=batch_size, loss_function=loss_function, optimizer=optimizer,
-                                          print_interval=print_interval, accuracy_function=calculate_accuracy,
+                                          print_interval=print_interval,
                                           X_on_the_fly_function=model.embed_texts, test_first=False,
                                           shuffle=False, print_tsne=False, drop_last=False, print_graph=False,
                                           print_matrix=False)

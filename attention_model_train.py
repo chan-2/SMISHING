@@ -17,15 +17,16 @@ if __name__ == '__main__':
     device = get_device_name_agnostic()
     model = AttentionModel(input_size=768, hidden_size=512).to(device)
     # set hyper parameters
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.000001)
+    # lr = 0.000001
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.000032)
     loss_function = torch.nn.BCELoss()
-    epochs = 1
+    epochs = 10
     print_interval = 1
-    batch_size = 2
+    batch_size = 4
     # train loop
     train_loop(train_data_set=train_dataset, test_data_set=test_dataset, epochs=epochs, model=model, device=device,
                batch_size=batch_size, loss_function=loss_function, optimizer=optimizer, print_interval=print_interval,
-               accuracy_function=calculate_accuracy, X_on_the_fly_function=model.embed_texts, test_first=True, shuffle=False,
-               print_tsne=True, drop_last=False, print_graph=True, print_matrix=True, model_save_path="test.pt")
+               X_on_the_fly_function=model.embed_texts, test_first=True, shuffle=False,
+               print_tsne=True, drop_last=False, print_graph=True, print_matrix=True, model_save_path=None)
 
 
