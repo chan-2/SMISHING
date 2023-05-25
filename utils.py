@@ -11,7 +11,7 @@ def calculate_test_loss(model, device, loss_function, test_data_loader, X_on_the
     model.eval()
     with torch.inference_mode():
         average_test_loss = 0
-        for test_data in test_data_loader:
+        for test_data in tqdm(test_data_loader, position=0, leave=False, desc="Calculating Test Loss"):
             test_X, test_y = test_data
             if X_on_the_fly_function is not None:
                 test_X = X_on_the_fly_function(test_X)
@@ -28,7 +28,7 @@ def calculate_accuracy(model, test_data_loader, X_on_the_fly_function=None):
     correct = 0
     model.eval()
     with torch.inference_mode():
-        for (X, y) in test_data_loader:
+        for (X, y) in tqdm(test_data_loader, position=0, leave=False, desc="Calculating Accuracy"):
             if X_on_the_fly_function is not None:
                 X = X_on_the_fly_function(X)
             y_pred = torch.round(model(X))
@@ -60,9 +60,9 @@ def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size,
     if test_first:
         last_accuracy = print_progress(train_data_loader, test_data_loader, model, device, 0, loss_function, 0, accuracy_function, X_on_the_fly_function)
 
-    for epoch in tqdm(range(1, epochs+1), position=0, leave=False):
+    for epoch in range(1, epochs+1):
         average_train_loss = 0
-        for train_data in tqdm(train_data_loader, position=0, leave=False):
+        for train_data in tqdm(train_data_loader, position=0, leave=False, desc="Training"):
             model.train()
             X, y = train_data
             if X_on_the_fly_function is not None:
@@ -113,7 +113,7 @@ def print_confusion_matrix(model, data_loader, X_on_the_fly_function=None):
     ys = deque()
     model.eval()
     with torch.inference_mode():
-        for (X, y) in data_loader:
+        for (X, y) in tqdm(data_loader, position=0, leave=False, desc="Creating Confusion Matrix"):
             if X_on_the_fly_function is not None:
                 X = X_on_the_fly_function(X)
             y_pred = torch.round(model(X))
@@ -128,7 +128,7 @@ def print_tsne_model_output(model, data_loader, X_on_the_fly_function=None):
     # Predict label
     model.eval()
     with torch.inference_mode():
-        for (X, y) in data_loader:
+        for (X, y) in tqdm(data_loader, position=0, leave=False, desc="Creating T-SNE"):
             if X_on_the_fly_function is not None:
                 X = X_on_the_fly_function(X)
             _, X_embedding = model(X, True)
