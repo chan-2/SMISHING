@@ -12,7 +12,7 @@ def calculate_test_loss_and_accuracy(model, device, loss_function, test_data_loa
     correct = 0
     with torch.inference_mode():
         average_test_loss = 0
-        for test_data in tqdm(test_data_loader, position=0, leave=False, desc="Calculating Test Loss & Accuracy"):
+        for test_data in tqdm(test_data_loader, position=0, leave=False, desc="Calculating Test Loss & Accuracy", delay=0.1):
             test_X, test_y = test_data
             if X_on_the_fly_function is not None:
                 test_X = X_on_the_fly_function(test_X)
@@ -53,7 +53,7 @@ def train_loop(train_data_set, test_data_set, epochs, model, device, batch_size,
 
     for epoch in range(1, epochs+1):
         average_train_loss = 0
-        for train_data in tqdm(train_data_loader, position=0, leave=False, desc="Training"):
+        for train_data in tqdm(train_data_loader, position=0, leave=False, desc="Training", delay=0.1):
             model.train()
             X, y = train_data
             if X_on_the_fly_function is not None:
@@ -99,7 +99,7 @@ def print_confusion_matrix(model, data_loader, X_on_the_fly_function=None):
     ys = deque()
     model.eval()
     with torch.inference_mode():
-        for (X, y) in tqdm(data_loader, position=0, leave=False, desc="Creating Confusion Matrix"):
+        for (X, y) in tqdm(data_loader, position=0, leave=False, desc="Creating Confusion Matrix", delay=0.1):
             if X_on_the_fly_function is not None:
                 X = X_on_the_fly_function(X)
             y_pred = torch.round(model(X))
@@ -114,7 +114,7 @@ def print_tsne_model_output(model, data_loader, X_on_the_fly_function=None):
     # Predict label
     model.eval()
     with torch.inference_mode():
-        for (X, y) in tqdm(data_loader, position=0, leave=False, desc="Creating T-SNE"):
+        for (X, y) in tqdm(data_loader, position=0, leave=False, desc="Creating T-SNE", delay=0.1):
             if X_on_the_fly_function is not None:
                 X = X_on_the_fly_function(X)
             _, X_embedding = model(X, True)
