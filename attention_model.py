@@ -24,14 +24,13 @@ class AttentionModel(nn.Module):
         h = torch.zeros((N, self.hidden_size)).to(self.device)
         c = torch.zeros((N, self.hidden_size)).to(self.device)
         hs = h.view(N, 1, self.hidden_size)
-
+        h_tilde = torch.zeros((N, self.hidden_size)).to(self.device)
         for i in range(L):
+            h, c = self.lstm_cell(X[:,i,:], (h_tilde, c))
             attention_weights = self._get_attention_scores(hs, h, N, softmax=True)
-            context_vector = torch.sum(hs * attention_weights, dim=1)
-            concatenated_vector = torch.cat((h, context_vector), dim=1)
-            new_hidden = self.cvt_linear(concatenated_vector)
-            h, c = self.lstm_cell(X[:,i,:], (new_hidden, c))
-            hs = torch.cat((hs, h.view(N, 1, self.hidden_size)), dim=1)
+            h_hat = torch.sum(hs * attention_weights, dim=1)
+            h_tilde = self.cvt_linear(torch.cat((h, h_hat), dim=1))
+            hs = torch.cat((hs, h_tilde.view(N, 1, self.hidden_size)), dim=1)
 
         output = self.sigmoid(self.out_linear(h))
         if return_embedding:
