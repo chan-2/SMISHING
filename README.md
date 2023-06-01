@@ -6,28 +6,28 @@ Development of <b>'Smishing detection model in Korean' </b>
 
 ## Directories
 
-<b>attention_model<b>
+<big>attention_model<big>
 <br>Training code the attention model
 
-<b>baseline_model<b>
+<big>baseline_model<big>
 <br>Training, cross validation code for basline model
 
-<b>make_gpt_data<b>
+<big>make_gpt_data<big>
 <br>Making web(Chat gpt) generated spam data into csv file.
 
-<b>model<b>
+<big>model<big>
 Training, cross validation code for basline model
 
-<b>pre_neologism_detect<b>
+<big>pre_neologism_detect<big>
 <br>Neologism detecting using ConcepNet, making neologism dictionary
 
-<b>preprocess, statistics<b>
+<big>preprocess, statistics<big>
 <br>Data preprocess and statistics
 
-<b>result<b>
+<big>result<big>
 <br>Results for model, baseline, neologism dictionary
 
-<b>testing_models<b>
+<big>testing_models<big>
 <br>Testing final model, baseline model and neologism model
 
 ## Team members
