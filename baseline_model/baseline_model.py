@@ -32,3 +32,10 @@ class BaselineModel(nn.Module):
     def tokenize_texts(self, texts):
         tokenized_texts = self.tokenizer(texts, padding=True, return_tensors="pt")
         return tokenized_texts['input_ids'].to(self.device)
+    
+    def embed_texts(self, texts):
+        tokenized_texts = self.tokenizer(texts, padding=True, return_tensors="pt")
+        model_output = self.pretrained_model(input_ids=tokenized_texts['input_ids'].to(self.device),
+                                             attention_mask=tokenized_texts['attention_mask'].to(self.device))
+        embeddings = model_output["last_hidden_state"]
+        return embeddings
