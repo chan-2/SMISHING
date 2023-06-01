@@ -1,6 +1,6 @@
 import random
 from data.load_mecab_data import *
-from baseline_model import *
+from baseline_model.baseline_model import *
 from utils import *
 from torch.utils.data import Subset
 from sklearn.model_selection import KFold
