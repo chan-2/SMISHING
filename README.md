@@ -2,7 +2,7 @@
 
 ## Topic
 
-Development of <b>'Smishing detection model in Korean' </b>  &nbsp; [[PPT](https://github.com/AIProject2023/AI_Project_Team2/blob/main/presentation/Final%20Team%20Presentation_Team2.pptx)]
+Development of <b>'Smishing detection model in Korean' </b>  &nbsp; [[PPT](https://github.com/AIProject2023/AI_Project_Team2/blob/main/presentation/Final%20Team%20Presentation-Team2.pptx)]
 
 ## Directories
 
