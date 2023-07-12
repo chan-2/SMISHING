@@ -1,4 +1,4 @@
-# AI_Project_Team2
+# AI ICT 창의 자율 공모전
 
 ## Topic
 
@@ -33,8 +33,5 @@ Training, cross validation code for basline model
 ## Team members
 
 Junghyun Song (2018313063) <br>
-Jaewon Lee (2019315447) <br>
-Sangin Keum (2018311642) <br>
 Seohyun Kim (2018313404) <br>
-Youbin Kim (2018312405) <br>
 Songchan Jin (2018313491) <br>
