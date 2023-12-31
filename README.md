@@ -1,4 +1,5 @@
 # AI ICT 창의 자율 공모전
+![스크린샷 2023-12-31 140041](https://github.com/chan-2/SMISHING/assets/44949723/9b0ae82b-dc9c-44ea-b12c-831f3aeb7175)
 
 ## Topic
 
